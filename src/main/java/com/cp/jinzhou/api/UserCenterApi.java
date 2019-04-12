@@ -3,15 +3,20 @@
  */
 package com.cp.jinzhou.api;
 
-import com.cp.jinzhou.core.entity.LoginLog;
 import com.cp.jinzhou.core.service.IUserService;
 import com.cp.jinzhou.core.vo.TerseUser;
 import com.cp.utils.ErrorDefine;
 import com.cp.utils.JsonResult;
 import com.cp.utils.MD5;
 import com.cp.utils.StrUtil;
-import com.cp.webutils.SessionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Date;
+import java.util.Map;
 
 /**
  * 供UI调用的用户相关api(ajax接口)，响应结构为JsonResult的json格式。<br>
@@ -63,41 +68,41 @@ public class UserCenterApi {
     //代理商登录名:agent, 密码:mytest, role:11 。name=YWdlbnQ=&password=83A23F82C7804BADC026ABBB5780840C&randStr=test
     @RequestMapping("/login")
     @ResponseBody
-    public JsonResult login(Short role,String name,String password,String randStr,HttpServletRequest request,HttpSession httpSession)
+    public JsonResult login(HttpServletRequest request,HttpSession httpSession, Map<String,
+            Object> map)
     {
- //   	SessionUtils.printRequestInfo("aaa", request);
-    	System.err.println(SessionUtils.getRequestInfo(request));
-    	System.out.println(SessionUtils.getRequestContent(request));
-		if (StrUtil.isBlank(name)) {
-			return new JsonResult(ErrorDefine.LOGIN_NAME_IS_EMPTY_ERR);
-		}
-			
-		if (StrUtil.isBlank(password)) {
-			return new JsonResult(ErrorDefine.PASSWORD_IS_EMPTY_ERR);
-		}
-			
-    	TerseUser user=userService.login(role,name, password,randStr);
-        if (user==null) {
-        	return new JsonResult(ErrorDefine.LOGIN_NAME_OR_PASSWORD_ERR);
+        System.out.println("HomeController.login()");
+        // 登录失败从request中获取shiro处理的异常信息。
+        // shiroLoginFailure:就是shiro异常类的全类名.
+        String exception = (String) request.getAttribute("shiroLoginFailure");
+        System.out.println("exception=" + exception);
+        String msg = "";
+        if (exception != null) {
+            if (UnknownAccountException.class.getName().equals(exception)) {
+                System.out.println("UnknownAccountException -- > 账号不存在：");
+                msg = "UnknownAccountException -- > 账号不存在：";
+            } else if (IncorrectCredentialsException.class.getName().equals(exception)) {
+                System.out.println("IncorrectCredentialsException -- > 密码不正确：");
+                msg = "IncorrectCredentialsException -- > 密码不正确：";
+            } else if ("kaptchaValidateFailed".equals(exception)) {
+                System.out.println("kaptchaValidateFailed -- > 验证码错误");
+                msg = "kaptchaValidateFailed -- > 验证码错误";
+            } else {
+                msg = "else >> "+exception;
+                System.out.println("else -- >" + exception);
+            }
         }
-            
-        TerseUser retUser=new TerseUser(user);
-        user.setLoginTime(new Date());
-        user.setLoginIp(SessionUtils.getVistorIp(request));
-        System.err.println(user.getName());
-        retUser.setName(user.getName());
-        httpSession.setAttribute("user", user); 
-        System.out.println(httpSession.getAttribute("user"));
-        LoginLog lastLog=userService.getLastLoginLog(user.getId());
-        if(lastLog!=null)
-        {
-        	retUser.setLoginIp(lastLog.getLoginIp());
-        	retUser.setLoginTime(lastLog.getLoginTime());
+        map.put("msg", msg);
+        // 此方法不处理登录成功,由shiro进行处理
+        UsernamePasswordToken token = new UsernamePasswordToken(request.getParameter("loginName"),
+                request.getParameter("userPwd"));
+        Subject subject = SecurityUtils.getSubject();
+        try {
+            subject.login(token);
+            return new JsonResult();
+        } catch (AuthenticationException e) {
+            return new JsonResult(msg);
         }
-        
-        String ua = request.getHeader("user-agent").toLowerCase();// 解析浏览器
-        userService.logLoginInfo(user.getId(),user.getLoginIp() , ua);
-        return new JsonResult(retUser);
     }
     /***
      * 登录系统，如果成功则返回当前用户的信息
@@ -143,6 +148,17 @@ public class UserCenterApi {
     		httpSession.removeAttribute("user");
     	
     	 return new JsonResult(ErrorDefine.OK);
+    }
+
+
+    @RequiresPermissions("user:add")
+    @RequestMapping("/add")
+    @ResponseBody
+    public JsonResult add(HttpServletRequest request,HttpSession httpSession, Map<String,
+            Object> map)
+    {
+
+        return new JsonResult("OK");
     }
 
 }

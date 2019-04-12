@@ -44,10 +44,10 @@ public class RoleMenu {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RoleMenu RoleMenu = (RoleMenu) o;
-        return id == RoleMenu.id &&
-                Objects.equals(roleId, RoleMenu.roleId) &&
-                Objects.equals(menuId, RoleMenu.menuId);
+        RoleMenu roleMenu = (RoleMenu) o;
+        return id == roleMenu.id &&
+                Objects.equals(roleId, roleMenu.roleId) &&
+                Objects.equals(menuId, roleMenu.menuId);
     }
 
     @Override

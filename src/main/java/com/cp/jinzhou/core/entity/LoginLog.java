@@ -82,11 +82,20 @@ public class LoginLog {
         return Objects.hash(id, userId, loginIp, loginTime, ua);
     }
 
-    public LoginLog() {
+    public LoginLog(int id, Integer userId, String loginIp, Timestamp loginTime, String ua) {
+        this.id = id;
+        this.userId = userId;
+        this.loginIp = loginIp;
+        this.loginTime = loginTime;
+        this.ua = ua;
     }
 
-    public LoginLog(Integer userId, String loginIp, String ua) {
-        this.userId = userId;
+    public LoginLog(int id) {
+        this.id = id;
+    }
+
+    public LoginLog(int id, String loginIp, String ua) {
+        this.id = id;
         this.loginIp = loginIp;
         this.ua = ua;
     }

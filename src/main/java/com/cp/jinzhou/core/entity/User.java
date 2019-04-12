@@ -15,6 +15,7 @@ public class User {
     private Timestamp createTime;
     private String remark;
 
+
     @Id
     @Column(name = "Id")
     public int getId() {
@@ -43,21 +44,6 @@ public class User {
 
     public void setUserPwd(String userPwd) {
         this.userPwd = userPwd;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User that = (User) o;
-        return id == that.id &&
-                Objects.equals(userName, that.userName) &&
-                Objects.equals(userPwd, that.userPwd);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, userName, userPwd);
     }
 
     @Basic
@@ -97,6 +83,39 @@ public class User {
     }
 
     public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id &&
+                Objects.equals(userName, user.userName) &&
+                Objects.equals(userPwd, user.userPwd) &&
+                Objects.equals(state, user.state) &&
+                Objects.equals(loginName, user.loginName) &&
+                Objects.equals(createTime, user.createTime) &&
+                Objects.equals(remark, user.remark);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userName, userPwd, state, loginName, createTime, remark);
+    }
+
+    public User() {
+    }
+
+    public User(int id, String userName, String userPwd, String state, String loginName, Timestamp createTime, String remark) {
+        this.id = id;
+        this.userName = userName;
+        this.userPwd = userPwd;
+        this.state = state;
+        this.loginName = loginName;
+        this.createTime = createTime;
         this.remark = remark;
     }
 }

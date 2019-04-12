@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface IUserDao extends Repository<User, Short> {
+public interface IUserDao extends Repository<User,Integer> {
 
     public User findById(int id);
     public User findByLoginName(String userName);

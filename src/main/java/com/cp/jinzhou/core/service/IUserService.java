@@ -15,7 +15,7 @@ public interface IUserService {
      * @param randStr md5的随机数
      * @return 如果成功，则返回用户的简洁信息
      */
-    public TerseUser login(Short role, String loginNameBase64, String passwordMd5, String randStr);
+    public TerseUser login( String loginName, String password);
     /**
      * 修改密码
      * @param userId 用户id
@@ -59,5 +59,8 @@ public interface IUserService {
      * @throws ResultException
      */
     public void addUser(Short userTypeId, String name, String loginName, String password)  throws ResultException;
+
+
+    public User findByUsername(String loginName);
 
 }

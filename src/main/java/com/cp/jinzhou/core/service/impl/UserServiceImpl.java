@@ -4,8 +4,8 @@ import com.cp.jinzhou.core.dao.ILoginLogDao;
 import com.cp.jinzhou.core.dao.IUserDao;
 import com.cp.jinzhou.core.entity.LoginLog;
 import com.cp.jinzhou.core.entity.User;
-import com.cp.jinzhou.core.vo.TerseUser;
 import com.cp.jinzhou.core.service.IUserService;
+import com.cp.jinzhou.core.vo.TerseUser;
 import com.cp.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,19 +39,18 @@ public class UserServiceImpl implements IUserService {
      * @return 如果成功，则返回用户的简洁信息
      */
     @Override
-    public TerseUser login(Short role, String loginNameBase64, String passwordMd5, String randStr) {
-        //log.info("login[role:"+role+",loginNameBase64:"+loginNameBase64+",passwordMd5:"+passwordMd5+",randStr:"+randStr+"]");
-        // 解密 loginName and password
-        String loginName = Base64.decode(loginNameBase64);
+    public TerseUser login( String loginName, String passwordMd5) {
+
+
         if (StrUtil.isEmpty(loginName)) {
             return null;
         }
 
-        User user = decryptPwd(userDao.findByLoginNameAndState(loginName, "0"));
-        System.err.println(user.getUserName());
+        User user = userDao.findByLoginNameAndState(loginName, "0");
+        //System.err.println(user.getUserName());
 
-            if (MD5.toMd5Lower(user.getLoginName() + user.getUserPwd() + randStr).equals(passwordMd5)) {
-                System.err.println(user.getUserName());
+            if (user.getUserPwd().equals(passwordMd5)) {
+                //System.err.println(user.getUserName());
                 TerseUser terseUser=new TerseUser();
                 terseUser.setId(user.getId());
                 terseUser.setName(user.getUserName());
@@ -104,6 +103,12 @@ public class UserServiceImpl implements IUserService {
     public void addUser( Short userTypeId,String name,String loginName, String password ) throws ResultException {
 
 
+    }
+
+    @Override
+    public User findByUsername(String loginName) {
+
+        return userDao.findByLoginName(loginName);
     }
 
     /*
